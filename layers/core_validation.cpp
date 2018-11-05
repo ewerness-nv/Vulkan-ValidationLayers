@@ -5170,7 +5170,7 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateComputePipelines(VkDevice device, VkPipelin
 }
 
 static bool PreCallValidateCreateRaytracingPipelinesNVX(layer_data *dev_data, uint32_t count,
-                                                        const VkRaytracingPipelineCreateInfoNVX *pCreateInfos,
+                                                        const VkRayTracingPipelineCreateInfoNV *pCreateInfos,
                                                         vector<std::unique_ptr<PIPELINE_STATE>> &pipe_state) {
     bool skip = false;
 
@@ -5181,7 +5181,7 @@ static bool PreCallValidateCreateRaytracingPipelinesNVX(layer_data *dev_data, ui
     uint32_t i = 0;
     for (i = 0; i < count; i++) {
         pipe_state.push_back(std::unique_ptr<PIPELINE_STATE>(new PIPELINE_STATE));
-        pipe_state[i]->initRaytracingPipelineNVX(&pCreateInfos[i]);
+        pipe_state[i]->initRaytracingPipelineNV(&pCreateInfos[i]);
         pipe_state[i]->pipeline_layout = *GetPipelineLayout(dev_data, pCreateInfos[i].layout);
     }
 
@@ -5204,7 +5204,7 @@ static void PostCallRecordCreateRaytracingPipelinesNVX(layer_data *dev_data, uin
 }
 
 VKAPI_ATTR VkResult VKAPI_CALL CreateRaytracingPipelinesNVX(VkDevice device, VkPipelineCache pipelineCache, uint32_t count,
-                                                            const VkRaytracingPipelineCreateInfoNVX *pCreateInfos,
+                                                            const VkRayTracingPipelineCreateInfoNV *pCreateInfos,
                                                             const VkAllocationCallbacks *pAllocator, VkPipeline *pPipelines) {
     bool skip = false;
     vector<std::unique_ptr<PIPELINE_STATE>> pipe_state;
@@ -5225,7 +5225,7 @@ VKAPI_ATTR VkResult VKAPI_CALL CreateRaytracingPipelinesNVX(VkDevice device, VkP
     }
 
     auto result =
-        dev_data->dispatch_table.CreateRaytracingPipelinesNVX(device, pipelineCache, count, pCreateInfos, pAllocator, pPipelines);
+        dev_data->dispatch_table.CreateRayTracingPipelinesNV(device, pipelineCache, count, pCreateInfos, pAllocator, pPipelines);
     lock.lock();
 
     PostCallRecordCreateRaytracingPipelinesNVX(dev_data, count, pipe_state, pPipelines);
@@ -7279,7 +7279,7 @@ bool ValidatePipelineBindPoint(layer_data *device_data, GLOBAL_CB_NODE *cb_state
         static const std::map<VkPipelineBindPoint, VkQueueFlags> flag_mask = {
             std::make_pair(VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<VkQueueFlags>(VK_QUEUE_GRAPHICS_BIT)),
             std::make_pair(VK_PIPELINE_BIND_POINT_COMPUTE, static_cast<VkQueueFlags>(VK_QUEUE_COMPUTE_BIT)),
-            std::make_pair(VK_PIPELINE_BIND_POINT_RAYTRACING_NVX,
+            std::make_pair(VK_PIPELINE_BIND_POINT_RAY_TRACING_NV,
                            static_cast<VkQueueFlags>(VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT)),
         };
         const auto &qfp = GetPhysDevProperties(device_data)->queue_family_properties[pool->queueFamilyIndex];
@@ -7309,7 +7309,7 @@ static bool PreCallValidateCmdPushDescriptorSetKHR(layer_data *device_data, GLOB
     static const std::map<VkPipelineBindPoint, std::string> bind_errors = {
         std::make_pair(VK_PIPELINE_BIND_POINT_GRAPHICS, "VUID-vkCmdPushDescriptorSetKHR-pipelineBindPoint-00363"),
         std::make_pair(VK_PIPELINE_BIND_POINT_COMPUTE, "VUID-vkCmdPushDescriptorSetKHR-pipelineBindPoint-00363"),
-        std::make_pair(VK_PIPELINE_BIND_POINT_RAYTRACING_NVX, "VUID-vkCmdPushDescriptorSetKHR-pipelineBindPoint-00363")};
+        std::make_pair(VK_PIPELINE_BIND_POINT_RAY_TRACING_NV, "VUID-vkCmdPushDescriptorSetKHR-pipelineBindPoint-00363")};
 
     skip |= ValidatePipelineBindPoint(device_data, cb_state, bind_point, func_name, bind_errors);
     auto layout_data = GetPipelineLayout(device_data, layout);
@@ -8439,19 +8439,19 @@ const static VkPipelineStageFlags AccessMaskToPipeStage[28] = {
     VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT |
         VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT | VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT |
         VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TASK_SHADER_BIT_NV |
-        VK_PIPELINE_STAGE_MESH_SHADER_BIT_NV | VK_PIPELINE_STAGE_RAYTRACING_BIT_NVX,
+        VK_PIPELINE_STAGE_MESH_SHADER_BIT_NV | VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_NV,
     // VK_ACCESS_INPUT_ATTACHMENT_READ_BIT = 4
     VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
     // VK_ACCESS_SHADER_READ_BIT = 5
     VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT |
         VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT | VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT |
         VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TASK_SHADER_BIT_NV |
-        VK_PIPELINE_STAGE_MESH_SHADER_BIT_NV | VK_PIPELINE_STAGE_RAYTRACING_BIT_NVX,
+        VK_PIPELINE_STAGE_MESH_SHADER_BIT_NV | VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_NV,
     // VK_ACCESS_SHADER_WRITE_BIT = 6
     VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT |
         VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT | VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT |
         VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TASK_SHADER_BIT_NV |
-        VK_PIPELINE_STAGE_MESH_SHADER_BIT_NV | VK_PIPELINE_STAGE_RAYTRACING_BIT_NVX,
+        VK_PIPELINE_STAGE_MESH_SHADER_BIT_NV | VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_NV,
     // VK_ACCESS_COLOR_ATTACHMENT_READ_BIT = 7
     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
     // VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT = 8
@@ -8481,9 +8481,9 @@ const static VkPipelineStageFlags AccessMaskToPipeStage[28] = {
     // VK_ACCESS_CONDITIONAL_RENDERING_READ_BIT_EXT = 20
     VK_PIPELINE_STAGE_CONDITIONAL_RENDERING_BIT_EXT,
     // VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_NVX = 21
-    VK_PIPELINE_STAGE_RAYTRACING_BIT_NVX,
+    VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_NV,
     // VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_NVX = 22
-    VK_PIPELINE_STAGE_RAYTRACING_BIT_NVX,
+    VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_NV,
     // VK_ACCESS_SHADING_RATE_IMAGE_READ_BIT_NV = 23
     VK_PIPELINE_STAGE_SHADING_RATE_IMAGE_BIT_NV,
     // 24
